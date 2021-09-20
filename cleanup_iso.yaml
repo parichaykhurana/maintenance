@@ -1,0 +1,25 @@
+---
+- hosts: all
+  tasks:
+    - name: find all files that are older than two days
+      find:
+        paths: "/opt/boot-iso/"
+        age: "2d"
+        file_type: file
+        patterns: "*.iso"
+      register: fileOlderThan2d
+   
+    - name: Display files older than 2 days
+      debug:
+        var: fileOlderThan2d
+
+    - name: Display files older than 2 days that will be removed in next step
+      debug:
+        msg: "{{ item.path }}"
+      with_items: "{{  fileOlderThan2d.files }}"
+
+    - name: remove older than 3 days but first ten newest
+      file:
+        path: "{{ item.path }}" 
+        state: absent
+      with_items: "{{  fileOlderThan2d.files }}"
